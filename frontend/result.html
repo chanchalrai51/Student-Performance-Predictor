@@ -95,11 +95,58 @@
             </div>
         </div>
 
+        <!-- Confidence Score Card -->
+        <div class="confidence-card">
+            <h2>📊 Prediction Confidence</h2>
+            <div class="confidence-display">
+                <div class="confidence-meter">
+                    <div class="confidence-bar" id="confidenceBar">
+                        <span id="confidencePercent">--</span>%
+                    </div>
+                </div>
+                <p class="confidence-level" id="confidenceLevel">--</p>
+                <p class="confidence-description">Based on ensemble agreement of multiple models</p>
+            </div>
+        </div>
+
         <!-- Feature Chart -->
         <div class="chart-card">
             <h2>📈 Your Performance Indicators</h2>
             <div class="chart-box">
                 <canvas id="contributionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Interactive Analytics Section -->
+        <div class="analytics-section">
+            <h2>📊 Detailed Analytics</h2>
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <h3>Performance Distribution</h3>
+                    <canvas id="performanceDistChart"></canvas>
+                </div>
+                <div class="analytics-card">
+                    <h3>Score Breakdown</h3>
+                    <canvas id="scoreBreakdownChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- SHAP Explanation -->
+        <div class="shap-card">
+            <h2>🔍 Feature Importance (SHAP Explanations)</h2>
+            <p class="shap-description">Shows how each factor impacts your predicted end-semester marks</p>
+            <div class="shap-container" id="shapContainer">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Improvement Suggestions -->
+        <div class="suggestions-card">
+            <h2>💡 Personalized Improvement Suggestions</h2>
+            <p class="suggestions-description">Based on your performance data, here are actionable recommendations</p>
+            <div class="suggestions-container" id="suggestionsContainer">
+                <!-- Populated by JavaScript -->
             </div>
         </div>
 

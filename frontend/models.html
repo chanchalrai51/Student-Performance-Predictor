@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Comparison - Student Predictor</title>
+    <link rel="stylesheet" href="../frontend/css/style_models.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">🎓</span>
+                <span class="logo-text">Student Predictor</span>
+            </div>
+            <div class="mobile-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="models.html" class="active">Models</a></li>
+                <li><a href="predict.html">Predict</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>🤖 Model Comparison Dashboard</h1>
+            <p>Compare performance of different machine learning models</p>
+        </div>
+
+        <!-- Metrics Overview -->
+        <div class="metrics-overview">
+            <h2>Model Performance Metrics</h2>
+            <div class="metrics-table-wrapper">
+                <table class="metrics-table">
+                    <thead>
+                        <tr>
+                            <th>Model Name</th>
+                            <th>Train R²</th>
+                            <th>Test R²</th>
+                            <th>MAE</th>
+                            <th>RMSE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="metricsTableBody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <div class="chart-card">
+                <h3>R² Score Comparison</h3>
+                <canvas id="r2Chart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h3>Error Metrics Comparison</h3>
+                <canvas id="errorChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Model Details -->
+        <div class="model-details">
+            <h2>Detailed Model Information</h2>
+            <div class="models-grid" id="modelsGrid">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Prediction Comparison -->
+        <div class="prediction-comparison">
+            <h2>📊 Test Prediction Across Models</h2>
+            <p>Enter student data to see predictions from all models</p>
+
+            <div class="quick-predict-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Attendance (%)</label>
+                        <input type="number" id="testAttendance" min="0" max="100" value="85" />
+                    </div>
+                    <div class="form-group">
+                        <label>Study Hours</label>
+                        <input type="number" id="testStudyHours" min="0" max="12" value="6" step="0.1" />
+                    </div>
+                    <div class="form-group">
+                        <label>Previous CGPA</label>
+                        <input type="number" id="testCGPA" min="0" max="10" value="7.5" step="0.01" />
+                    </div>
+                    <div class="form-group">
+                        <label>Internal Marks</label>
+                        <input type="number" id="testInternal" min="0" max="30" value="25" step="0.1" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Midsem Marks</label>
+                        <input type="number" id="testMidsem" min="0" max="20" value="18" step="0.1" />
+                    </div>
+                    <div class="form-group">
+                        <label>Backlogs</label>
+                        <input type="number" id="testBacklogs" min="0" max="5" value="0" />
+                    </div>
+                    <div class="form-group">
+                        <label>Assignment (%)</label>
+                        <input type="number" id="testAssignment" min="0" max="100" value="90" step="0.1" />
+                    </div>
+                    <div class="form-group">
+                        <label>Participation</label>
+                        <input type="number" id="testParticipation" min="1" max="5" value="4" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" id="testAge" min="17" max="30" value="20" />
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select id="testGender">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Extra-Curricular</label>
+                        <select id="testExtraCurricular">
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Late Night Entry</label>
+                        <input type="number" id="testLateNight" min="1" max="5" value="2" />
+                    </div>
+                </div>
+
+                <button class="btn-compare" onclick="compareOnModels()">📊 Compare Predictions</button>
+            </div>
+
+            <div id="comparisonResults" class="comparison-results">
+                <!-- Results populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="predict.html" class="btn-action">🔮 Make Prediction</a>
+            <a href="index.html" class="btn-action">🏠 Back to Home</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Student Performance Predictor | ML Mini Project</p>
+        </div>
+    </footer>
+
+    <script src="../frontend/js/script_models.js"></script>
+    <script>
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+
+        window.addEventListener('DOMContentLoaded', loadModelDashboard);
+    </script>
+</body>
+</html>

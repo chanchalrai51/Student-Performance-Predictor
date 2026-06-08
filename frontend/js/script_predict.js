@@ -4,6 +4,8 @@
 
 // API Configuration
 const API_URL = 'http://localhost:5000/predict';
+const EXPLAIN_URL = 'http://localhost:5000/explain';
+const SUGGESTIONS_URL = 'http://localhost:5000/suggestions';
 
 // Mobile menu toggle
 function toggleMobileMenu() {
@@ -313,42 +315,73 @@ function displayResults() {
     // Get data from sessionStorage
     const resultsData = sessionStorage.getItem('predictionResults');
     const inputData = sessionStorage.getItem('inputData');
-    
+
     if (!resultsData || !inputData) {
         alert('No prediction data found. Please make a prediction first.');
         window.location.href = 'predict.html';
         return;
     }
-    
+
     const results = JSON.parse(resultsData);
     const inputs = JSON.parse(inputData);
-    
+
     // Display predicted marks
     document.getElementById('predictedMarks').textContent = results.predicted_endsem_marks.toFixed(2);
-    
+
     // Display breakdown
     document.getElementById('midsemMarks').textContent = inputs.midsem_marks.toFixed(1);
     document.getElementById('internalMarks').textContent = inputs.internal_marks.toFixed(1);
     document.getElementById('endsemMarks').textContent = results.predicted_endsem_marks.toFixed(2);
     document.getElementById('totalMarks').textContent = results.total_marks.toFixed(2);
-    
+
     // Display grade
     const gradeBadge = document.getElementById('gradeBadge');
     gradeBadge.textContent = results.grade;
     gradeBadge.className = 'grade-badge grade-' + results.grade;
-    
+
+    // Display confidence score
+    if (results.confidence_score !== undefined) {
+        const confidencePercent = Math.round(results.confidence_score * 100);
+        document.getElementById('confidencePercent').textContent = confidencePercent;
+        document.getElementById('confidenceLevel').textContent = results.confidence_level || 'Medium';
+
+        const confidenceBar = document.getElementById('confidenceBar');
+        confidenceBar.style.width = confidencePercent + '%';
+
+        if (confidencePercent >= 90) {
+            confidenceBar.style.background = 'linear-gradient(90deg, #48bb78, #38a169)';
+        } else if (confidencePercent >= 80) {
+            confidenceBar.style.background = 'linear-gradient(90deg, #4299e1, #3182ce)';
+        } else if (confidencePercent >= 70) {
+            confidenceBar.style.background = 'linear-gradient(90deg, #ed8936, #dd6b20)';
+        } else if (confidencePercent >= 60) {
+            confidenceBar.style.background = 'linear-gradient(90deg, #f6ad55, #ed8936)';
+        } else {
+            confidenceBar.style.background = 'linear-gradient(90deg, #fc8181, #f56565)';
+        }
+    }
+
     // Create contribution chart
     createContributionChart(inputs);
-    
+
+    // Create analytics charts
+    createPerformanceDistributionChart(results, inputs);
+    createScoreBreakdownChart(results, inputs);
+
     // Populate input summary table
     populateInputSummary(inputs);
+
+    // Fetch and display SHAP explanations
+    fetchAndDisplaySHAP(inputs);
+
+    // Fetch and display suggestions
+    fetchAndDisplaySuggestions(inputs);
 }
 
 function createContributionChart(inputs) {
     const ctx = document.getElementById('contributionChart');
     if (!ctx) return;
-    
-    // Normalize values for visualization (0-100 scale)
+
     const chartData = {
         'Attendance': inputs.attendance,
         'Study Hours': (inputs.study_hours / 12) * 100,
@@ -359,7 +392,7 @@ function createContributionChart(inputs) {
         'Participation': (inputs.class_participation / 5) * 100,
         'Backlogs Impact': Math.max(0, 100 - (inputs.backlogs * 20))
     };
-    
+
     new Chart(ctx, {
         type: 'bar',
         data: {
@@ -413,6 +446,107 @@ function createContributionChart(inputs) {
     });
 }
 
+function createPerformanceDistributionChart(results, inputs) {
+    const ctx = document.getElementById('performanceDistChart');
+    if (!ctx) return;
+
+    const predictedEndsem = results.predicted_endsem_marks;
+    const midsem = inputs.midsem_marks;
+    const internal = inputs.internal_marks;
+    const total = results.total_marks;
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Midsem', 'Internal', 'Endsem (Predicted)'],
+            datasets: [{
+                data: [midsem, internal, predictedEndsem],
+                backgroundColor: [
+                    'rgba(237, 137, 54, 0.8)',
+                    'rgba(72, 187, 120, 0.8)',
+                    'rgba(102, 126, 234, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(237, 137, 54, 1)',
+                    'rgba(72, 187, 120, 1)',
+                    'rgba(102, 126, 234, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const maxValue = [20, 30, 50][context.dataIndex];
+                            return `${label}: ${value.toFixed(1)}/${maxValue}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function createScoreBreakdownChart(results, inputs) {
+    const ctx = document.getElementById('scoreBreakdownChart');
+    if (!ctx) return;
+
+    const gradeData = {
+        'Midsem': inputs.midsem_marks,
+        'Internal': inputs.internal_marks,
+        'Endsem': results.predicted_endsem_marks
+    };
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Object.keys(gradeData),
+            datasets: [{
+                label: 'Marks',
+                data: Object.values(gradeData),
+                borderColor: 'rgba(102, 126, 234, 1)',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                fill: true,
+                tension: 0.4,
+                borderWidth: 3,
+                pointRadius: 6,
+                pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                pointBorderColor: 'white',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 50,
+                    ticks: {
+                        callback: function(value) {
+                            return value;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
 function populateInputSummary(inputs) {
     const tableBody = document.getElementById('inputSummaryTable');
     if (!tableBody) return;
@@ -442,6 +576,112 @@ function populateInputSummary(inputs) {
             </tr>
         `;
     });
-    
+
     tableBody.innerHTML = html;
+}
+
+async function fetchAndDisplaySHAP(inputs) {
+    const container = document.getElementById('shapContainer');
+    if (!container) return;
+
+    try {
+        const response = await fetch(EXPLAIN_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(inputs)
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.explanations) {
+            let html = '<div class="shap-bars">';
+
+            data.explanations.forEach(exp => {
+                const impact = exp.shap_value > 0 ? 'positive' : 'negative';
+                const percentage = Math.abs(exp.shap_value) * 10;
+                const displayValue = exp.shap_value.toFixed(3);
+
+                html += `
+                    <div class="shap-item">
+                        <div class="shap-label">
+                            <span class="feature-name">${exp.feature}</span>
+                            <span class="feature-value">${exp.value.toFixed(2)}</span>
+                        </div>
+                        <div class="shap-bar-container">
+                            <div class="shap-bar ${impact}" style="width: ${Math.min(percentage, 100)}%">
+                                <span class="shap-value">${displayValue}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<p style="color: #666;">SHAP explanations not available</p>';
+        }
+    } catch (error) {
+        console.log('SHAP error:', error);
+        container.innerHTML = '<p style="color: #999;">Could not load SHAP explanations</p>';
+    }
+}
+
+async function fetchAndDisplaySuggestions(inputs) {
+    const container = document.getElementById('suggestionsContainer');
+    if (!container) return;
+
+    try {
+        const response = await fetch(SUGGESTIONS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(inputs)
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.suggestions) {
+            let html = '';
+
+            data.suggestions.forEach(suggestion => {
+                const priorityClass = suggestion.priority.toLowerCase().replace(' ', '-');
+                const priorityBadgeClass = 'priority-' + suggestion.priority.toLowerCase();
+                const iconMap = {
+                    'Attendance': '📚',
+                    'Study Hours': '⏰',
+                    'Assignment Completion': '✏️',
+                    'Class Participation': '🙋',
+                    'Backlogs': '⚠️',
+                    'Academic Strength': '📖',
+                    'Sleep Schedule': '😴',
+                    'Holistic Development': '🎯',
+                    'Overall Performance': '⭐'
+                };
+                const icon = iconMap[suggestion.category] || '💡';
+
+                html += `
+                    <div class="suggestion-item ${priorityClass}-priority">
+                        <div class="suggestion-icon">${icon}</div>
+                        <div class="suggestion-content">
+                            <div class="suggestion-category">
+                                ${suggestion.category}
+                                <span class="priority-badge ${priorityBadgeClass}">
+                                    ${suggestion.priority}
+                                </span>
+                            </div>
+                            <p class="suggestion-text">${suggestion.suggestion}</p>
+                            <p class="suggestion-impact">💪 ${suggestion.impact}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<p style="color: #666;">Could not load suggestions</p>';
+        }
+    } catch (error) {
+        console.log('Suggestions error:', error);
+        container.innerHTML = '<p style="color: #999;">Could not load improvement suggestions</p>';
+    }
 }
