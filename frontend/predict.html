@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predict Performance - Student Predictor</title>
+    <link rel="stylesheet" href="../frontend/css/style_predict.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">🎓</span>
+                <span class="logo-text">Student Predictor</span>
+            </div>
+            <!-- Mobile Menu Toggle -->
+            <div class="mobile-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <!-- Navigation Links -->
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="predict.html" class="active">Predict</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="page-header">
+            <h1>📊 Performance Prediction</h1>
+            <p>Enter your academic details to predict your end-semester performance</p>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+            <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Academic</div>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Personal</div>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Review</div>
+            </div>
+        </div>
+
+        <!-- Form Container -->
+        <form id="predictionForm">
+            <!-- Section 1: Academic Features -->
+            <div class="form-section active" id="section1">
+                <div class="section-header">
+                    <h2>📚 Academic Features</h2>
+                    <p>Provide your academic performance details</p>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="attendance">
+                            Attendance <span class="required">*</span>
+                        </label>
+                        <input type="number" id="attendance" name="attendance" 
+                               min="0" max="100" step="0.01" required
+                               placeholder="0 - 100%">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="study_hours">
+                            Study Hours / Day <span class="required">*</span>
+                        </label>
+                        <input type="number" id="study_hours" name="study_hours" 
+                               min="0" max="12" step="0.1" required
+                               placeholder="0 - 12 hours">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="previous_cgpa">
+                            Previous CGPA <span class="required">*</span>
+                        </label>
+                        <input type="number" id="previous_cgpa" name="previous_cgpa" 
+                               min="0" max="10" step="0.01" required
+                               placeholder="0 - 10">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="internal_marks">
+                            Internal Marks <span class="required">*</span>
+                        </label>
+                        <input type="number" id="internal_marks" name="internal_marks" 
+                               min="0" max="30" step="0.1" required
+                               placeholder="0 - 30">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="midsem_marks">
+                            Mid-Semester Marks <span class="required">*</span>
+                        </label>
+                        <input type="number" id="midsem_marks" name="midsem_marks" 
+                               min="0" max="20" step="0.1" required
+                               placeholder="0 - 20">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="backlogs">
+                            Backlogs <span class="required">*</span>
+                        </label>
+                        <select id="backlogs" name="backlogs" required>
+                            <option value="">Select...</option>
+                            <option value="0">0 - No Backlogs</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5+</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="assignment_completion">
+                            Assignment Completion <span class="required">*</span>
+                        </label>
+                        <input type="number" id="assignment_completion" name="assignment_completion" 
+                               min="0" max="100" step="0.1" required
+                               placeholder="0 - 100%">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="class_participation">
+                            Class Participation <span class="required">*</span>
+                        </label>
+                        <select id="class_participation" name="class_participation" required>
+                            <option value="">Select level...</option>
+                            <option value="1">1 - Very Low</option>
+                            <option value="2">2 - Low</option>
+                            <option value="3">3 - Medium</option>
+                            <option value="4">4 - High</option>
+                            <option value="5">5 - Excellent</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="section-buttons">
+                    <button type="button" class="btn-next" onclick="nextSection(2)">
+                        Next: Personal Info →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section 2: Personal & Behavioral Features -->
+            <div class="form-section" id="section2">
+                <div class="section-header">
+                    <h2>👤 Personal & Behavioral Information</h2>
+                    <p>Provide demographic and behavioral details</p>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="age">
+                            Age <span class="required">*</span>
+                        </label>
+                        <input type="number" id="age" name="age" 
+                               min="17" max="30" required
+                               placeholder="17 - 30">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sex">
+                            Gender <span class="required">*</span>
+                        </label>
+                        <select id="sex" name="sex" required>
+                            <option value="">Select...</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="extra_curricular">
+                            Extra-Curricular Activities <span class="required">*</span>
+                        </label>
+                        <select id="extra_curricular" name="extra_curricular" required>
+                            <option value="">Select...</option>
+                            <option value="Yes">Yes - Active participant</option>
+                            <option value="No">No - Not involved</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="late_night_entry">
+                            Late-Night Hostel Entry <span class="required">*</span>
+                        </label>
+                        <select id="late_night_entry" name="late_night_entry" required>
+                            <option value="">Select frequency...</option>
+                            <option value="1">1 - Never</option>
+                            <option value="2">2 - Rarely</option>
+                            <option value="3">3 - Sometimes</option>
+                            <option value="4">4 - Often</option>
+                            <option value="5">5 - Very Frequent</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="section-buttons">
+                    <button type="button" class="btn-prev" onclick="prevSection(1)">
+                        ← Previous
+                    </button>
+                    <button type="button" class="btn-next" onclick="nextSection(3)">
+                        Next: Review →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section 3: Review & Submit -->
+            <div class="form-section" id="section3">
+                <div class="section-header">
+                    <h2>✅ Review Your Information</h2>
+                    <p>Please verify all details before prediction</p>
+                </div>
+
+                <div class="review-container" id="reviewData">
+                    <!-- Review data will be populated by JavaScript -->
+                </div>
+
+                <div class="section-buttons">
+                    <button type="button" class="btn-prev" onclick="prevSection(2)">
+                        ← Previous
+                    </button>
+                    <button type="submit" class="btn-predict">
+                        🔮 Predict Performance
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Loading Indicator -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing your data...</p>
+        </div>
+    </div>
+
+    <script src="../frontend/js/script_predict.js"></script>
+</body>
+</html>
