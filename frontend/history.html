@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction History - Student Predictor</title>
+    <link rel="stylesheet" href="../frontend/css/style_result.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">🎓</span>
+                <span class="logo-text">Student Predictor</span>
+            </div>
+            <div class="mobile-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="models.html">Models</a></li>
+                <li><a href="history.html" class="active">History</a></li>
+                <li><a href="predict.html">Predict</a></li>
+                <li><button type="button" class="theme-toggle" id="themeToggle" onclick="toggleTheme()">Dark Mode</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Prediction History</h1>
+            <p>Track saved predictions and monitor performance trends over time</p>
+        </div>
+
+        <section class="history-card">
+            <div class="history-card-header">
+                <h2>Trend Summary</h2>
+                <button type="button" class="btn-small" onclick="clearPredictionHistory()">Clear History</button>
+            </div>
+            <div class="history-summary" id="historySummary"></div>
+            <div class="chart-box history-chart">
+                <canvas id="historyTrendChart"></canvas>
+            </div>
+            <div class="history-empty" id="historyEmptyState">
+                <h3>No predictions saved yet</h3>
+                <p>Make a prediction first, then come back here to see trends.</p>
+                <a href="predict.html" class="btn-action">Start Prediction</a>
+            </div>
+        </section>
+
+        <section class="summary-card">
+            <h2>Saved Predictions</h2>
+            <div class="table-wrapper">
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>End-Sem</th>
+                            <th>Total</th>
+                            <th>Grade</th>
+                            <th>Confidence</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="action-buttons">
+            <a href="predict.html" class="btn-action">New Prediction</a>
+            <button type="button" class="btn-action" onclick="printReport()">Download PDF Report</button>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Student Performance Predictor | ML Mini Project</p>
+        </div>
+    </footer>
+
+    <script src="../frontend/js/script_predict.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', displayPredictionHistory);
+    </script>
+</body>
+</html>

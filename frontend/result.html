@@ -25,7 +25,9 @@
             <ul class="nav-links" id="navLinks">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="about.html">About</a></li>
+                <li><a href="history.html">History</a></li>
                 <li><a href="predict.html">New Prediction</a></li>
+                <li><button type="button" class="theme-toggle" id="themeToggle" onclick="toggleTheme()">Dark Mode</button></li>
             </ul>
         </div>
     </nav>
@@ -172,8 +174,9 @@
         <!-- Action Buttons -->
         <div class="action-buttons">
             <a href="predict.html" class="btn-action">🔄 New Prediction</a>
+            <a href="history.html" class="btn-action">View History</a>
             <a href="index.html" class="btn-action">🏠 Back to Home</a>
-            <button onclick="window.print()" class="btn-action">🖨️ Print</button>
+            <button onclick="printReport()" class="btn-action">Download PDF Report</button>
         </div>
     </div>
 

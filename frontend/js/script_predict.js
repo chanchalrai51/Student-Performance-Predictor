@@ -6,11 +6,55 @@
 const API_URL = 'http://localhost:5000/predict';
 const EXPLAIN_URL = 'http://localhost:5000/explain';
 const SUGGESTIONS_URL = 'http://localhost:5000/suggestions';
+const HISTORY_KEY = 'predictionHistory';
 
 // Mobile menu toggle
 function toggleMobileMenu() {
     const navLinks = document.getElementById('navLinks');
     navLinks.classList.toggle('active');
+}
+
+function applySavedTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.body.classList.toggle('dark-mode', savedTheme === 'dark');
+
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.textContent = savedTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+    }
+}
+
+function toggleTheme() {
+    const nextTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
+    localStorage.setItem('theme', nextTheme);
+    applySavedTheme();
+}
+
+document.addEventListener('DOMContentLoaded', applySavedTheme);
+
+function getPredictionHistory() {
+    try {
+        return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function savePredictionHistory(result, inputData) {
+    const history = getPredictionHistory();
+    const record = {
+        id: Date.now(),
+        created_at: new Date().toISOString(),
+        predicted_endsem_marks: result.predicted_endsem_marks,
+        total_marks: result.total_marks,
+        grade: result.grade,
+        confidence_score: result.confidence_score || null,
+        confidence_level: result.confidence_level || null,
+        input: inputData
+    };
+
+    history.unshift(record);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 25)));
 }
 
 // Validation ranges
@@ -292,6 +336,7 @@ if (document.getElementById('predictionForm')) {
                 // Store results in sessionStorage
                 sessionStorage.setItem('predictionResults', JSON.stringify(result));
                 sessionStorage.setItem('inputData', JSON.stringify(data));
+                savePredictionHistory(result, data);
                 
                 // Redirect to results page
                 window.location.href = 'result.html';
@@ -376,6 +421,104 @@ function displayResults() {
 
     // Fetch and display suggestions
     fetchAndDisplaySuggestions(inputs);
+}
+
+function printReport() {
+    document.body.classList.add('printing-report');
+    window.print();
+    setTimeout(() => document.body.classList.remove('printing-report'), 500);
+}
+
+function clearPredictionHistory() {
+    if (!confirm('Clear all saved prediction history?')) return;
+    localStorage.removeItem(HISTORY_KEY);
+    displayPredictionHistory();
+}
+
+function displayPredictionHistory() {
+    const summary = document.getElementById('historySummary');
+    const tableBody = document.getElementById('historyTableBody');
+    const emptyState = document.getElementById('historyEmptyState');
+    const chartCanvas = document.getElementById('historyTrendChart');
+    if (!summary || !tableBody) return;
+
+    const history = getPredictionHistory();
+
+    if (!history.length) {
+        summary.innerHTML = '';
+        tableBody.innerHTML = '';
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+    }
+
+    if (emptyState) emptyState.style.display = 'none';
+
+    const totals = history.map(item => Number(item.total_marks) || 0);
+    const best = Math.max(...totals);
+    const latest = history[0];
+    const average = totals.reduce((sum, value) => sum + value, 0) / totals.length;
+
+    summary.innerHTML = `
+        <div class="history-stat">
+            <span class="stat-label">Predictions</span>
+            <strong>${history.length}</strong>
+        </div>
+        <div class="history-stat">
+            <span class="stat-label">Latest Total</span>
+            <strong>${latest.total_marks.toFixed(2)}</strong>
+        </div>
+        <div class="history-stat">
+            <span class="stat-label">Average Total</span>
+            <strong>${average.toFixed(2)}</strong>
+        </div>
+        <div class="history-stat">
+            <span class="stat-label">Best Total</span>
+            <strong>${best.toFixed(2)}</strong>
+        </div>
+    `;
+
+    tableBody.innerHTML = history.map(item => {
+        const date = new Date(item.created_at).toLocaleString();
+        const confidence = item.confidence_score ? `${Math.round(item.confidence_score * 100)}%` : 'N/A';
+        return `
+            <tr>
+                <td>${date}</td>
+                <td>${item.predicted_endsem_marks.toFixed(2)}</td>
+                <td>${item.total_marks.toFixed(2)}</td>
+                <td><span class="history-grade grade-${item.grade}">${item.grade}</span></td>
+                <td>${confidence}</td>
+            </tr>
+        `;
+    }).join('');
+
+    if (chartCanvas && window.Chart) {
+        const ordered = [...history].reverse();
+        new Chart(chartCanvas, {
+            type: 'line',
+            data: {
+                labels: ordered.map((_, index) => `Run ${index + 1}`),
+                datasets: [{
+                    label: 'Total Marks',
+                    data: ordered.map(item => item.total_marks),
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.14)',
+                    tension: 0.35,
+                    fill: true,
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
 }
 
 function createContributionChart(inputs) {

@@ -13,6 +13,11 @@ body {
     line-height: 1.6;
 }
 
+body.dark-mode {
+    background: #111827;
+    color: #e5e7eb;
+}
+
 /* Navigation */
 .navbar {
     background: white;
@@ -71,8 +76,24 @@ body {
     transition: color 0.3s;
 }
 
-.nav-links a:hover {
+.nav-links a:hover,
+.nav-links a.active {
     color: #667eea;
+}
+
+.theme-toggle {
+    background: #edf2f7;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    color: #2d3748;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+    padding: 8px 14px;
+}
+
+.theme-toggle:hover {
+    background: #e2e8f0;
 }
 
 /* Main Container */
@@ -107,7 +128,8 @@ body {
 .chart-card,
 .shap-card,
 .suggestions-card,
-.summary-card {
+.summary-card,
+.history-card {
     background: white;
     padding: 2.5rem;
     margin-bottom: 2rem;
@@ -123,7 +145,8 @@ body {
 .chart-card:hover,
 .shap-card:hover,
 .suggestions-card:hover,
-.summary-card:hover {
+.summary-card:hover,
+.history-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.12);
 }
@@ -135,7 +158,8 @@ body {
 .chart-card h2,
 .shap-card h2,
 .suggestions-card h2,
-.summary-card h2 {
+.summary-card h2,
+.history-card h2 {
     color: #2d3748;
     margin-bottom: 1.5rem;
     font-size: 1.4rem;
@@ -423,6 +447,163 @@ body {
     box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
 }
 
+/* History */
+.history-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.history-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.history-stat {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.history-stat .stat-label {
+    color: #718096;
+    display: block;
+    font-size: 0.85rem;
+    margin-bottom: 0.35rem;
+}
+
+.history-stat strong {
+    color: #667eea;
+    font-size: 1.7rem;
+}
+
+.history-chart {
+    margin-top: 1rem;
+}
+
+.history-empty {
+    display: none;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+.history-empty h3 {
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.history-empty p {
+    color: #718096;
+    margin-bottom: 1.5rem;
+}
+
+.history-grade {
+    border-radius: 8px;
+    color: white;
+    display: inline-block;
+    font-weight: 700;
+    min-width: 34px;
+    padding: 4px 10px;
+    text-align: center;
+}
+
+.btn-small {
+    background: #edf2f7;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    color: #2d3748;
+    cursor: pointer;
+    font-weight: 700;
+    padding: 10px 14px;
+}
+
+.btn-small:hover {
+    background: #e2e8f0;
+}
+
+/* Dark mode */
+body.dark-mode .navbar,
+body.dark-mode .result-card,
+body.dark-mode .breakdown-card,
+body.dark-mode .grade-card,
+body.dark-mode .confidence-card,
+body.dark-mode .chart-card,
+body.dark-mode .shap-card,
+body.dark-mode .suggestions-card,
+body.dark-mode .summary-card,
+body.dark-mode .history-card,
+body.dark-mode .analytics-section {
+    background: #1f2937;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+}
+
+body.dark-mode .page-header h1,
+body.dark-mode .result-card h2,
+body.dark-mode .breakdown-card h2,
+body.dark-mode .grade-card h2,
+body.dark-mode .confidence-card h2,
+body.dark-mode .chart-card h2,
+body.dark-mode .shap-card h2,
+body.dark-mode .suggestions-card h2,
+body.dark-mode .summary-card h2,
+body.dark-mode .history-card h2,
+body.dark-mode .analytics-section h2,
+body.dark-mode .analytics-card h3,
+body.dark-mode .feature-name,
+body.dark-mode .suggestion-category,
+body.dark-mode .history-empty h3 {
+    color: #f9fafb;
+}
+
+body.dark-mode .nav-links a,
+body.dark-mode .page-header p,
+body.dark-mode .grade-note,
+body.dark-mode .confidence-description,
+body.dark-mode .shap-description,
+body.dark-mode .suggestions-description,
+body.dark-mode .suggestion-text,
+body.dark-mode .suggestion-impact,
+body.dark-mode .history-empty p {
+    color: #cbd5e1;
+}
+
+body.dark-mode .chart-box,
+body.dark-mode .breakdown-item,
+body.dark-mode .scale-item,
+body.dark-mode .analytics-card,
+body.dark-mode .history-stat,
+body.dark-mode .shap-bar-container,
+body.dark-mode .confidence-meter,
+body.dark-mode .theme-toggle,
+body.dark-mode .btn-small {
+    background: #111827;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+
+body.dark-mode .summary-table td {
+    border-bottom-color: #374151;
+}
+
+body.dark-mode .summary-table tbody tr:hover {
+    background: #111827;
+}
+
+body.dark-mode .nav-links.active {
+    background: #1f2937;
+}
+
+body.dark-mode .feature-value {
+    background: #293449;
+    color: #93c5fd;
+}
+
 /* SHAP Explanation Styles */
 .shap-description {
     color: #718096;
@@ -643,7 +824,11 @@ body {
     .result-card,
     .breakdown-card,
     .grade-card,
+    .confidence-card,
     .chart-card,
+    .shap-card,
+    .suggestions-card,
+    .history-card,
     .summary-card {
         padding: 1.5rem;
     }
@@ -688,15 +873,84 @@ body {
         font-size: 0.85rem;
         padding: 8px 15px;
     }
+
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .analytics-card {
+        padding: 1rem;
+    }
+
+    .history-card-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .history-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .suggestion-item {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 520px) {
+    .container {
+        margin: 1rem auto;
+        padding: 0 12px;
+    }
+
+    .history-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-table th,
+    .summary-table td {
+        padding: 0.75rem;
+        white-space: nowrap;
+    }
 }
 
 @media print {
     .navbar,
-    .action-buttons {
+    .action-buttons,
+    .btn-small,
+    .footer {
         display: none;
     }
     
     body {
         background: white;
+        color: #111;
+    }
+
+    body.dark-mode {
+        background: white;
+        color: #111;
+    }
+
+    .result-card,
+    .breakdown-card,
+    .grade-card,
+    .confidence-card,
+    .chart-card,
+    .analytics-section,
+    .shap-card,
+    .suggestions-card,
+    .summary-card,
+    .history-card {
+        box-shadow: none;
+        break-inside: avoid;
+        border: 1px solid #e2e8f0;
+    }
+
+    .page-header {
+        margin-bottom: 1rem;
+    }
+
+    @page {
+        margin: 14mm;
     }
 }
