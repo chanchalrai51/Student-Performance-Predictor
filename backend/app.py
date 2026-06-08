@@ -9,9 +9,12 @@ import pickle
 import numpy as np
 import os
 import shap
+from pathlib import Path
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend-backend communication
+
+BASE_DIR = Path(__file__).resolve().parent
 
 # Global variables for model and scaler
 model = None
@@ -19,14 +22,82 @@ scaler = None
 explainer = None
 all_models = {}
 model_metrics = {}
+explainer_type = None
+
+def build_shap_background():
+    """
+    Build a small scaled background dataset for model-agnostic SHAP explainers.
+    """
+    import pandas as pd
+
+    dataset_path = BASE_DIR / 'student_performance_dataset.csv'
+    if not dataset_path.exists() or scaler is None:
+        return None
+
+    df = pd.read_csv(dataset_path)
+    features = df.drop('Endsem_Marks', axis=1)
+    background = scaler.transform(features)
+
+    if len(background) > 100:
+        rng = np.random.default_rng(42)
+        sample_indices = rng.choice(len(background), size=100, replace=False)
+        background = background[sample_indices]
+
+    return background
+
+def initialize_shap_explainer(trained_model):
+    """
+    Select a SHAP explainer that matches the loaded regression model.
+    """
+    global explainer_type
+
+    model_type = type(trained_model).__name__
+    background = build_shap_background()
+
+    if model_type in ['RandomForestRegressor', 'GradientBoostingRegressor', 'DecisionTreeRegressor']:
+        explainer_type = 'TreeExplainer'
+        return shap.TreeExplainer(trained_model)
+
+    if model_type in ['LinearRegression', 'Ridge', 'Lasso', 'ElasticNet']:
+        if background is None:
+            raise ValueError('Background data is required for LinearExplainer')
+        explainer_type = 'LinearExplainer'
+        return shap.LinearExplainer(trained_model, background)
+
+    if background is None:
+        raise ValueError('Background data is required for KernelExplainer')
+
+    explainer_type = 'KernelExplainer'
+    return shap.KernelExplainer(trained_model.predict, shap.sample(background, min(50, len(background))))
+
+def get_shap_values(features_scaled):
+    """
+    Return a flat list of SHAP values for one scaled prediction row.
+    """
+    if explainer_type == 'KernelExplainer':
+        shap_values = explainer.shap_values(features_scaled, nsamples=100)
+    else:
+        shap_values = explainer.shap_values(features_scaled)
+
+    shap_values = np.asarray(shap_values)
+
+    if shap_values.ndim == 3:
+        return shap_values[0, :, 0]
+    if shap_values.ndim == 2:
+        return shap_values[0]
+    return shap_values.flatten()
+
+def get_shap_base_value():
+    expected_value = getattr(explainer, 'expected_value', 0)
+    return float(np.asarray(expected_value).flatten()[0])
 
 # Load model and scaler on startup
 def load_models():
-    global model, scaler, explainer, all_models, model_metrics
+    global model, scaler, explainer, all_models, model_metrics, explainer_type
     import json
     try:
-        model_path = 'model.pkl'
-        scaler_path = 'scaler.pkl'
+        model_path = BASE_DIR / 'model.pkl'
+        scaler_path = BASE_DIR / 'scaler.pkl'
 
         if not os.path.exists(model_path) or not os.path.exists(scaler_path):
             print("⚠️  Model files not found!")
@@ -43,24 +114,27 @@ def load_models():
         model_files = ['randomforest_model.pkl', 'gradientboosting_model.pkl',
                       'linearregression_model.pkl', 'ridge_model.pkl', 'svr_model.pkl']
         for model_file in model_files:
-            if os.path.exists(model_file):
-                with open(model_file, 'rb') as f:
+            model_file_path = BASE_DIR / model_file
+            if model_file_path.exists():
+                with open(model_file_path, 'rb') as f:
                     model_name = model_file.replace('_model.pkl', '')
                     all_models[model_name] = pickle.load(f)
 
         # Load model metrics
-        if os.path.exists('model_metrics.json'):
-            with open('model_metrics.json', 'r') as f:
+        metrics_path = BASE_DIR / 'model_metrics.json'
+        if metrics_path.exists():
+            with open(metrics_path, 'r') as f:
                 metrics_data = json.load(f)
                 model_metrics = {k.lower().replace(' ', ''): v for k, v in metrics_data.items()}
 
         # Initialize SHAP explainer
         try:
-            explainer = shap.TreeExplainer(model)
-            print("✅ SHAP explainer initialized successfully")
+            explainer = initialize_shap_explainer(model)
+            print(f"✅ SHAP {explainer_type} initialized successfully")
         except Exception as e:
             print(f"⚠️  Warning: Could not initialize SHAP explainer: {str(e)}")
             explainer = None
+            explainer_type = None
 
         print("✅ Model and scaler loaded successfully")
         if all_models:
@@ -112,7 +186,10 @@ def health():
     return jsonify({
         "status": "healthy",
         "model_loaded": model is not None,
-        "scaler_loaded": scaler is not None
+        "scaler_loaded": scaler is not None,
+        "explainer_loaded": explainer is not None,
+        "explainer_type": explainer_type,
+        "model_type": type(model).__name__ if model else None
     })
 
 @app.route('/predict', methods=['POST'])
@@ -357,7 +434,7 @@ def explain():
         ]
 
         features_scaled = scaler.transform([features])
-        shap_values = explainer.shap_values(features_scaled)
+        shap_values = get_shap_values(features_scaled)
 
         feature_names = [
             'Attendance', 'Study Hours', 'Previous CGPA', 'Internal Marks',
@@ -368,11 +445,12 @@ def explain():
 
         explanations = []
         for i, name in enumerate(feature_names):
+            shap_value = float(shap_values[i])
             explanations.append({
                 "feature": name,
                 "value": features[i],
-                "shap_value": float(shap_values[i]),
-                "impact": "Positive" if shap_values[i] > 0 else "Negative"
+                "shap_value": shap_value,
+                "impact": "Positive" if shap_value > 0 else "Negative"
             })
 
         explanations.sort(key=lambda x: abs(x['shap_value']), reverse=True)
@@ -380,7 +458,9 @@ def explain():
         return jsonify({
             "success": True,
             "explanations": explanations,
-            "base_value": float(explainer.expected_value)
+            "base_value": get_shap_base_value(),
+            "explainer_type": explainer_type,
+            "model_type": type(model).__name__
         })
 
     except Exception as e:

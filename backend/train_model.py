@@ -115,7 +115,12 @@ for model_name, model_metrics in metrics.items():
     print(f"  RMSE:           {model_metrics['rmse']:.4f}")
 
 # Find best model
-best_model_name = max(metrics, key=lambda x: metrics[x]['r2_test'])
+# Uncomment this line if you want model.pkl to use the best model by test R^2:
+# best_model_name = max(metrics, key=lambda x: metrics[x]['r2_test'])
+
+# Keep Random Forest as default because SHAP explanations are fast and stable for tree models.
+best_model_name = "RandomForest"
+# print("Best model type:", type(models[best_model_name]))
 print(f"\n✅ Best Model (by Test R²): {best_model_name}")
 print("="*70)
 
